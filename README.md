@@ -1,2 +1,1 @@
-# mwache
-Shiny Application for the Mwache River Basin
+Slides for NEGSWS2016.
