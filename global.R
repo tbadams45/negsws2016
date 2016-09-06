@@ -16,6 +16,7 @@ if(packageVersion("DT") < "0.1.57") {
 source("R/phase3.R")
 source("R/phase4.R")
 source("R/climate_robustness.R") #used in phase 4
+source("R/utils.R")
 
 
 # -------------------------- Phase 3 data. -------------------------------------

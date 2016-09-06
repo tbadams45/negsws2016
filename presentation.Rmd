@@ -1,0 +1,25 @@
+---
+title: "Bringing insight to the decision maker"
+author: "Timothy Adams, Umit Taner, Patrick Ray"
+date: "September 10, 2016"
+output: ioslides_presentation
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## What Do Decision Makers Want to Know?
+
+> - Where is my risk?
+> - What can do I do to reduce my risk?
+
+<div class="notes">
+This is my *note*.
+
+- It can contain markdown
+- like this list
+</div>
+
+## Here's another slide!

@@ -104,35 +104,14 @@ phase3UI <- function(id) {
             em(strong(helpText(span("Design features", style = "color:blue")))),
             sliderInput(ns("ParcoordSizeSelect"), "Reservoir size", 
               min=80, max=140, step=20, value=120, post="MCM", ticks=F)
-          ),
-          wellPanel(
-            em(strong(helpText(span("Scenario definition", 
-              style = "color:blue")))),
-            numericInput(inputId = ns("ParCoordThold"), label = "NPV Threshold",
-              min = 500, max = 2000, value = 1000),
-            selectInput(inputId = ns("ParCoordTholdType"), label = "Threshold type",
-              choices=c(">=","<="), selected = ">=", selectize = F)
-          ) #wellPanel close
+          )
         ), #box close
         box(title = strong("Vulnerability domain"), width = 9, align = "left",
           solidHeader = F, status = "primary",
           parcoordsOutput(ns("ParcoordPlot")),
-          valueBoxOutput(ns("range"), width=4),
-          valueBoxOutput(ns("coverage"), width=4),
-          valueBoxOutput(ns("density"), width=4),
           br(), br(),
           plotOutput(ns("npv_distribution"), height = "300px", width = "500px"),
-          br(), br(), br(), br(),
-          #Tooltips
-          bsTooltip(ns("coverage"), 
-            "the percentage of satisfying runs that are described by the selection",
-            placement = "bottom", options = list(container = "body")),
-          bsTooltip(ns("density"), 
-            "the percentage of satisfying runs within the selection",
-            placement = "bottom", options = list(container = "body")),
-          bsTooltip(ns("range"), 
-            "relative size of the selection compared to the total number of lines on the plot",
-            placement = "bottom", options = list(container = "body"))
+          br(), br(), br(), br()
         ) #box close
       ) #fluidpage close
     ) #close tabPanel
@@ -359,7 +338,7 @@ phase3 <- function(input, output, session, surface_data, parc_data) {
 
   ####### NPV histogram - show distribution of selected area.
   output$npv_distribution <- renderPlot({
-    req(input$ParCoordThold, nrow(pc_data_selected()) != 0)
+    req(nrow(pc_data_selected()) != 0)
     pc_data <- parcoord_data()
     pc_data$data <- 'All'
     pc_selected  <- pc_data_selected()
@@ -370,40 +349,10 @@ phase3 <- function(input, output, session, surface_data, parc_data) {
     ggplot(histo_data, aes(NPV)) + 
       geom_histogram(data = filter(histo_data, data == 'All'), binwidth = 80, color = "red", alpha = 0.2) + 
       geom_histogram(data = filter(histo_data, data == 'Selected'), binwidth = 80, color = "blue", alpha = 0.2) +
-      geom_vline(xintercept = input$ParCoordThold, colour = "red") +
       theme_tufte(base_size = 14, base_family = 'GillSans') +
       coord_flip() + 
       theme(axis.title.y = element_text(angle = 0))
   })
-  
-  ####### VALUE BOXES 
-  MvarInfo <- reactive({
-    df <- parcoord_data()
-    rows <- if(length(input$ParcoordPlot_brushed_row_names) > 0) {
-      as.numeric(input$ParcoordPlot_brushed_row_names)
-    } else {as.numeric(rownames(df))}
-    
-    values <- as.numeric(df[['NPV']])
-    
-    val_interest <- switch(input$ParCoordTholdType,
-      ">=" = {which(values >= input$ParCoordThold)},
-      "<=" = {which(values <= input$ParCoordThold)})
-    
-    val_interest_select <- intersect(val_interest, rows)   
-    
-    cov  <- round(length(val_interest_select) / length(val_interest) * 100)
-    den  <- round(length(val_interest_select) / length(rows) * 100)
-    size <- round(length(rows)/nrow(df) * 100)
-    
-    list(range = valueBox(paste0(size,"%"), "selection range", color="blue"),
-      coverage = valueBox(paste0(cov,"%"), "scenario coverage", color="olive"),
-      density  = valueBox(paste0(den,"%"), "scenario density", color="maroon"))
-    
-  })
-  
-  output$range    <- renderValueBox({MvarInfo()[['range']]})
-  output$coverage <- renderValueBox({MvarInfo()[['coverage']]})
-  output$density  <- renderValueBox({MvarInfo()[['density']]})
 }
 
 
