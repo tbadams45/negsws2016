@@ -104,6 +104,6 @@ shinyApp(
                CMIP5        = CMIP5)
   },
   
-  options = list(height = 600)
+  options = list(height = 680)
 )
 ```

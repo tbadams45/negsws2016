@@ -17,6 +17,9 @@ phase4UI <- function(id, base_clim){
           box(width = 12, title = "Objective Space",
             status = "primary", align = "left",
             fluidRow(
+              column(width = 9,
+                fluidRow(parcoordsOutput(ns("obj_space")))
+              ), #close sliderInput and column
               column(width = 3,
                 sliderInput(ns("dom_rel_filter"),
                   "Domestic Reliability Range",
@@ -26,34 +29,13 @@ phase4UI <- function(id, base_clim){
                     ceiling(max(base_clim$dom_rel))),
                   step = 0.2,
                   round = -1
-                )), #close sliderINput and column
-              column(width = 3,
-                sliderInput(ns("irr_rel_filter"),
-                  "Irrigation Reliability Range",
-                  min = floor(min(base_clim$irr_rel)),
-                  max = ceiling(max(base_clim$irr_rel)),
-                  value = c(floor(min(base_clim$irr_rel)),
-                    ceiling(max(base_clim$irr_rel))),
-                  step = 0.2,
-                  round = -1
-                )), #close sliderInput and column
-              column(width = 3,
-                sliderInput(ns("dom_crel_filter"),
-                  "Domestic Crit. Reliability Range",
-                  min = floor(min(base_clim$dom_crel)),
-                  max = ceiling(max(base_clim$dom_crel)),
-                  value = c(floor(min(base_clim$dom_crel)),
-                    ceiling(max(base_clim$dom_crel))),
-                  step = 0.2,
-                  round = -1
-                )), #close sliderInput and column
-              column(width = 3,
+                ),
                 actionButton(ns("filterDataButton"),
                   "Filter"),
                 actionButton(ns("resetDataButton"),
-                  "Reset"))
-            ), #close inputs fluidRow
-            fluidRow(parcoordsOutput(ns("obj_space")))
+                  "Reset")
+              ) # close column
+            ) #close inputs fluidRow
           )), #close objective space box and fluidRow
         fluidRow(
           box(width = 12, title = "Decision Space", status="primary",
@@ -121,9 +103,7 @@ function reset_brush(id){
   filter_obj <- observeEvent(input$filterDataButton, {
     # filter based on sliders
     data  <- obj_space_default_data %>%
-      filter(between(dom_rel, input$dom_rel_filter[1], input$dom_rel_filter[2])) %>%
-      filter(between(irr_rel, input$irr_rel_filter[1], input$irr_rel_filter[2])) %>%
-      filter(between(dom_crel, input$dom_crel_filter[1], input$dom_crel_filter[2]))
+      filter(between(dom_rel, input$dom_rel_filter[1], input$dom_rel_filter[2]))
 
     # or filter based on highlighted data
     #data <- select(obj_space_selected(), one_of(pc_axes_adap))
@@ -132,13 +112,6 @@ function reset_brush(id){
     updateSliderInput(session, "dom_rel_filter",
       min = floor(min(data$dom_rel)),
       max = ceiling(max(data$dom_rel)))
-    updateSliderInput(session, "irr_rel_filter",
-      min = floor(min(data$irr_rel)),
-      max = ceiling(max(data$irr_rel)))
-    updateSliderInput(session, "dom_crel_filter",
-      min = floor(min(data$dom_crel)),
-      max = ceiling(max(data$dom_crel)))
-
 
 
     # assign to reactiveValue
@@ -154,16 +127,6 @@ function reset_brush(id){
       max = ceiling(max(obj_space_default_data$dom_rel)),
       value = c(floor(min(obj_space_default_data$dom_rel)),
                 ceiling(max(obj_space_default_data$dom_rel))))
-    updateSliderInput(session, "irr_rel_filter",
-      min = floor(min(obj_space_default_data$irr_rel)),
-      max = ceiling(max(obj_space_default_data$irr_rel)),
-      value = c(floor(min(obj_space_default_data$irr_rel)),
-                ceiling(max(obj_space_default_data$irr_rel))))
-    updateSliderInput(session, "dom_crel_filter",
-      min = floor(min(obj_space_default_data$dom_crel)),
-      max = ceiling(max(obj_space_default_data$dom_crel)),
-      value = c(floor(min(obj_space_default_data$dom_crel)),
-                ceiling(max(obj_space_default_data$dom_crel))))
   })
 
   output$obj_space <- renderParcoords({
@@ -251,7 +214,6 @@ function reset_brush(id){
 
   row_ids <- reactive({
     ids <- dec_space_selected()$ID
-    print(ids)
     ids
   })
 

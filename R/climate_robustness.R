@@ -5,7 +5,7 @@ climate_robustnessUI <- function(id) {
     fluidRow(column(6, uiOutput(ns(
       "design_select_ui")))
     ), # closs fluidRow for inputs
-    plotOutput(ns("heatmap"), height = "350px", width = "425px"),
+    plotOutput(ns("heatmap"), height = "300px", width = "350px"),
     br(),
     checkboxGroupInput(
       ns("climInfo"),
@@ -13,9 +13,7 @@ climate_robustnessUI <- function(id) {
       inline = F,
       c(
         "Historical climate (1960-2000)" = 1,
-        "CMIP5 projections"              = 2,
-        "CMIP5 confidence level (95%)"   = 3,
-        "CMIP5 confidence level (99%)"   = 4
+        "CMIP5 projections"              = 2
       )
     ),
     bsTooltip(
@@ -77,14 +75,6 @@ climate_robustness <- function(input,
         plot <- plot + geom_point(aes(x = del_temp, y = del_prec, shape = Scenario),
           size = 2, data = CMIP5, stroke = 1.5) +
           scale_shape_manual(name = "Scenarios", values =c(21,22,23,24))
-      }
-      if(3 %in% input$climInfo) {
-        plot <- plot + stat_ellipse(aes(x = del_temp, y = del_prec), data = CMIP5,
-          size = 1, linetype = "dotdash", level = 0.95)
-      }
-      if(4 %in% input$climInfo) {
-        plot <- plot + stat_ellipse(aes(x = del_temp, y = del_prec), data = CMIP5,
-          size = 1, linetype = "dotdash", level = 0.99)
       }
       
       plot
