@@ -1,4 +1,3 @@
-
 source("R/utils.R", local = TRUE)
 
 ################################################################################
@@ -14,55 +13,10 @@ phase3UI <- function(id) {
     tabPanel("Climate Only", value = ns("climate_only"),
       fluidPage(
         box(title = strong("Settings"), width=4, status="primary",
-          fluidRow(tags$div(style="margin-left:15px;",
-            bsButton(inputId = ns("SurfaceReset"), label="Defaults", 
-              icon = icon(name="refresh")))
-          ), #fluidrow close
-          br(),
           div(id = ns("SurfaceInputs"), 
-            wellPanel(
-              em(strong(helpText(span("Performance assessment", 
-                style="color:blue")))),
-              radioButtons(inputId = ns("metric"), label="Metric", 
-                selected="reliability", inline=T, 
-                choices = c("safeyield", "reliability")),
-              bsTooltip(ns("metric"), 
-                "safeyield in MCM, reliability as %",
-                placement = "right", options = list(container = "body")),
-              radioButtons(inputId = ns("units"), label="Evaluation type", 
-                selected = "disabled", inline = T,
-                choices = c("Continuous"="disabled", "binary"="enabled")),
-              bsTooltip(ns("units"), "Reporting method of the metric",
-                placement = "right", options = list(container = "body")),
-              sliderInput(inputId = ns("threshold"), label = "Threshold", 
-                min = 80, max = 100, step = 1, value = 90, ticks = F),
-              bsTooltip(ns("threshold"), "performance threshold (for binary evaluation)",
-                placement = "right", options = list(container = "body"))
-            ), # welpanel close
-            wellPanel(
-              em(strong(helpText(span("Natural climate variability", 
-                style="color:blue")))),
-              radioButtons(inputId=ns("dataset"), label="Underlying data", 
-                choices = c("Princeton","GPCC","CRU"), selected="Princeton",
-                inline = T),
-              bsTooltip(ns("dataset"), 
-                "climate data used to generate stochastic realizations",
-                placement = "right", options = list(container = "body")),
-              h5(strong("Climate realization")),
-              checkboxInput(ns("meanTrace"), "Mean realization", value = T),
-              #condition=paste0("input.", ns("meanTrace"), "== 0"),
-              bsTooltip(ns("meanTrace"), 
-                "show results for the mean of all traces or for an individual trace",
-                placement = "right", options = list(container = "body")),
-              sliderInput(ns("nvar"), label = NULL, 
-                min=1, max=10, step=1, value=1, ticks=F)
-            ), # wellpanel close
             wellPanel(
               em(strong(helpText(span("Non-climatic attributes", 
                 style = "color:blue")))),
-              
-              #conditionalPanel(
-              #  condition="input.metric == 'reliability'",
               sliderInput(ns("demand"), "Demand increase", 
                 min=50, max=200, step=30, value=80, post="%", ticks = F),
               bsTooltip(ns("demand"), 
@@ -125,7 +79,7 @@ phase3UI <- function(id) {
 ################################################################################
 
 phase3 <- function(input, output, session, surface_data, parc_data) {
-  # RESPONSE SURFACES ------------------------------------------------------------
+  # RESPONSE SURFACE ------------------------------------------------------------
   
   # Graphical parameters for surface plot
   label <- list(
@@ -149,49 +103,23 @@ phase3 <- function(input, output, session, surface_data, parc_data) {
   #### SURFACEPLOT DATA ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   surfaceData <- reactive({
     
-    var <- input$metric
+    var <- "reliability"
     
     dat <- surface_data %>% rename_(value = var) %>%
-      filter(dataset==input$dataset & size==input$size & demand==input$demand)
+      filter(dataset=="Princeton" & size==input$size & demand==input$demand)
     
-    #Plot for the mean trace
-    if(input$meanTrace == 1) {
-      dat %<>% filter(nvar == 0)} else {dat %<>% filter(nvar == input$nvar)}
+    #Plot the mean trace
+    dat %<>% filter(nvar == 0)
     
-    #Threshold based evaluation
-    if(input$units == "enabled") {
-      var_col <- c("royalblue4", "firebrick2")
-      threshold <- ifelse(is.null(input$threshold),90,input$threshold)
-      dat <- mutate(dat, 
-        Bins=ifelse(value>=threshold, "Acceptable", "Not acceptable"),
-        Bins=factor(Bins, levels = c("Acceptable", "Not acceptable"),
-          labels = c("Acceptable", "Not acceptable")))
-      
-      #In absolute units  
-    } else {
-      if (var == "reliability") {
-        
-        bin1 <- c(seq(40,90,10),95)
-        bin2 <- seq(96,100,1)
-        col1 <- colorRampPalette(c("firebrick2", "white"))(length(bin1))
-        col2 <- colorRampPalette(c("lightsteelblue1", "royalblue4"))(length(bin2))
-        var_col <- c(col1,col2)
-        var_bin <- c(bin1, bin2)  
-        
-      } else {
-        
-        bin1 <- seq(30,80,10)
-        bin2 <- seq(90,130,10)
-        col1 <- colorRampPalette(c("firebrick2", "white"))(length(bin1))
-        col2 <- colorRampPalette(c("lightsteelblue1", "royalblue4"))(length(bin2))
-        var_col <- c(col1,col2)
-        var_bin <- c(bin1, bin2) 
-        
-      }
-      
-      dat <- mutate(dat, Bins = cut(value,
-        breaks = var_bin, dig.lab = 5, include.lowest = T))
-    }
+    bin1 <- c(seq(40,90,10),95)
+    bin2 <- seq(96,100,1)
+    col1 <- colorRampPalette(c("firebrick2", "white"))(length(bin1))
+    col2 <- colorRampPalette(c("lightsteelblue1", "royalblue4"))(length(bin2))
+    var_col <- c(col1,col2)
+    var_bin <- c(bin1, bin2)  
+    
+    dat <- mutate(dat, Bins = cut(value,
+      breaks = var_bin, dig.lab = 5, include.lowest = T))
     
     list(dat = dat, var_col = var_col)
   }) 
@@ -231,43 +159,8 @@ phase3 <- function(input, output, session, surface_data, parc_data) {
     
     p1
   })
-  #output$SurfacePlot <- renderPlotly({SurfacePlot()})
   output$SurfacePlot <- renderPlot({SurfacePlot()})
-  
-  #### DYNAMIC METRIC SELECTION BUTTONS +++++++++++++++++++++++++++++++++++++++++
-  observeEvent(input$SurfaceReset, {shinyjs::reset("SurfaceInputs")})
-  
-  observe({
-    if (input$metric == "reliability") {
-      shinyjs::enable("demand") 
-      if (input$units=='enabled') {
-        updateSliderInput(session, inputId = "threshold", label = "Threshold",
-          min = 80, max = 100, step = 1, value = 90)}
-    } else if (input$metric == "safeyield") {
-      shinyjs::disable("demand")   
-      if (input$units=="enabled") {
-        updateSliderInput(session, inputId = "threshold", label = "Threshold",
-          min = 40, max = 140, step = 5, value = 100)}
-    }
-  })
-  
-  observe({
-    if (input$units=='enabled')
-      shinyjs::enable("threshold")
-    else 
-      shinyjs::disable("threshold")
-  })
-  
-  observe({
-    if (input$meanTrace == 0) {
-      shinyjs::enable("nvar") 
-    }
-    else {
-      shinyjs::disable("nvar")  
-    }
-  })
-  
-  
+
   #### Interaction with heatmap/surface plot -----------------------------------
   
   output$surface_click_info <- renderUI({
@@ -277,7 +170,7 @@ phase3 <- function(input, output, session, surface_data, parc_data) {
     y <- rnd(input$surface_click$y, nearest = 0.1)
     oldData <- filter(surfaceData()$dat)
     data <- filter(surfaceData()$dat, temp == round(x, 0), prec == round(y, 1))
-    metric <- cap_first(input$metric)
+    metric <- cap_first("reliability")
     HTML(paste0("<div class = 'surface-plot-click-info'>", "Values for selected box: <br>", "Temperature increase: ", data$temp, " &#8451;",
            "<br> Precipitation Change: ", data$prec*100, "% <br>", metric, ": ", round(data$value, 2), "</div>"))
   })
@@ -289,12 +182,12 @@ phase3 <- function(input, output, session, surface_data, parc_data) {
     parc_data %>% 
       filter(size == as.numeric(input$ParcoordSizeSelect)) %>%
       select(#"realization" = var, 
-        "delta Temp" = dtemp,
-        "delta Prec" = dprec, 
-        "price" = prc, 
-        "demand" = dem,
-        "sediment" = sed,
-        "disc rate" = dsc,
+        "Temp" = dtemp,
+        "Precip" = dprec, 
+        "Price" = prc, 
+        "Demand" = dem,
+        "Sediment" = sed,
+        "Discount Rate" = dsc,
         "NPV" = NPV) 
   })
   
@@ -313,17 +206,6 @@ phase3 <- function(input, output, session, surface_data, parc_data) {
       queue = T, 
       rate = 200,
       color = "steelblue",
-      #color = list(
-      #  colorBy = "NPV",
-      #  colorScale = htmlwidgets::JS(sprintf('
-      #  d3.scale.threshold()
-      #    .domain(%s)
-      #    .range(%s)
-      #  ',
-      #    jsonlite::toJSON(seq(0,round(max(parcoord_data()$NPV)))),
-      #    jsonlite::toJSON(RColorBrewer::brewer.pal(6,"PuBuGn"))
-      #  ))
-      #),
       tasks = htmlwidgets::JS("function foo(){this.parcoords.alphaOnBrushed(0.15);}") 
     )
   })
@@ -354,6 +236,3 @@ phase3 <- function(input, output, session, surface_data, parc_data) {
       theme(axis.title.y = element_text(angle = 0))
   })
 }
-
-
-

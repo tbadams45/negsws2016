@@ -10,16 +10,100 @@ runtime: shiny
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
+```{r setup-personal}
+parc_data <- read_csv("./data/LHS_output.csv", progress = FALSE)
+
+surface_data <- read_csv("./data/stresstest_ffd.csv", progress = FALSE) %>%
+  mutate(reliability = rel, creliability = crel) %>%
+  mutate(demand = multipleReplace(demand, what=c(57, 68, 80, 91, 103, 114),
+    by=c(50, 80, 110, 140, 170, 200)))
+
+surface_data_mean <- surface_data %>%
+  group_by(dataset, size, demand, temp, prec) %>%
+  summarize(reliability = mean(reliability), creliability = mean(creliability),
+    safeyield = mean(safeyield)) %>% mutate(nvar = 0)
+
+surface_data %<>% bind_rows(surface_data_mean)
+```
 ## What Do Decision Makers Want to Know?
 
 > - Where is my risk?
 > - What can do I do to reduce my risk?
 
-<div class="notes">
-This is my *note*.
+## Surface Plot, Interactive
+```{r phase3sp, echo = FALSE}
+source("R/phase3-surface.R")
+shinyApp(
+  
+  ui = fluidPage(
+    phase3spUI("phase3sp")
+  ),
+  
+  server = function(input, output, session) {
+    callModule(phase3sp,
+               "phase3sp",
+               surface_data = surface_data,
+               parc_data    = parc_data)
+  },
+  
+  options = list(height = 680)
+)
+```
 
-- It can contain markdown
-- like this list
-</div>
+## Parallel Coordinates
+```{r phase3pc, echo = FALSE}
+source("R/phase3-parallelcoordinates.R")
+shinyApp(
+  
+  ui = fluidPage(
+    phase3pcUI("phase3pc")
+  ),
+  
+  server = function(input, output, session) {
+    callModule(phase3pc,
+               "phase3pc",
+               surface_data = surface_data,
+               parc_data    = parc_data)
+  },
+  
+  options = list(height = 680)
+)
+```
 
-## Here's another slide!
+## Phase 4
+```{r phase4, echo = FALSE}
+adap_results <- read_csv("./data/mean_adaptation_results.csv")
+
+#errors in simulation run resulted in NAs. For now, replace them with dummy values.
+adap_results[is.na(adap_results)] <- 80
+
+metrics <- c("dom_rel", "irr_rel", "eco_rel", "dom_crel", "irr_crel",
+             "eco_crel", "dom_res", "irr_res", "eco_res", "dom_vul",
+             "irr_vul", "eco_vul")
+adap_results[metrics] <- lapply(adap_results[metrics],
+                                function(x) round(x, digits = 2))
+
+base_clim <- filter(adap_results, temp == 0 & precip == 1)
+base_clim <- mutate(base_clim, ID = as.numeric(rownames(base_clim)))
+
+CMIP5 <- read_csv("./data/CMIP5_deltaclim.csv") %>%
+  mutate(del_prec = del_prec/100 + 1) %>%
+  rename(Scenario = scenario)
+
+shinyApp(
+  
+  ui = fluidPage(
+    phase4UI("adaptation", base_clim)
+  ),
+  
+  server = function(input, output, session) { 
+    callModule(phase4, 
+               "adaptation", 
+               base_clim    = base_clim, 
+               adap_results = adap_results,
+               CMIP5        = CMIP5)
+  },
+  
+  options = list(height = 600)
+)
+```

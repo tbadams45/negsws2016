@@ -14,12 +14,6 @@ phase4UI <- function(id, base_clim){
     tabPanel("Objective and Decision Spaces", value = ns("obj_dec_spaces"),
       fluidPage(
         fluidRow(
-          box(width = 12, title = "Using this tool", status = "primary",
-            collapsible = TRUE,
-            includeMarkdown("www/phase4_help1.md")
-          ) #close box
-        ), #close fluidRow
-        fluidRow(
           box(width = 12, title = "Objective Space",
             status = "primary", align = "left",
             fluidRow(
@@ -70,11 +64,6 @@ phase4UI <- function(id, base_clim){
     tabPanel("Climate Robustness Analysis", value = ns("clim_space"),
       fluidPage(
         fluidRow(
-          box(width = 12, title = "Using this tool", status = "primary",
-            collapsible = TRUE,
-            includeMarkdown("www/phase4_help2.md")
-          ),
-
           fluidRow(
             box(width = 3, title = "Selected Metric to Examine:",
               selectInput(
