@@ -10,13 +10,8 @@ phase3pcUI <- function(id) {
   # parallel coordinates plot 
   fluidPage(
     parcoordsOutput(ns("ParcoordPlot"), height = "275px"),
-    column(8, 
-      plotOutput(ns("npv_distribution"), height = "200px", width = "500px")
-    ),
-    column(4,
-      sliderInput(ns("ParcoordSizeSelect"), "Reservoir size", 
-        min=80, max=140, step=20, value=120, post="MCM", ticks=F)
-    )
+    sliderInput(ns("ParcoordSizeSelect"), "Reservoir size", 
+      min=80, max=140, step=20, value=120, post="MCM", ticks=F)
   ) #fluidpage close
 }
 

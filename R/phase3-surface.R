@@ -17,9 +17,9 @@ phase3spUI <- function(id) {
             "CMIP5 projections"=2))),
       column(4, 
         sliderInput(ns("demand"), "Demand increase", 
-          min=50, max=200, step=30, value=80, post="%", ticks = F),
+          min=50, max=200, step=30, value=110, post="%", ticks = F),
         sliderInput(ns("size"), "Reservoir size", 
-          min=80, max=140, step=10, value=120, post="MCM", ticks = F),
+          min=80, max=140, step=10, value=90, post="MCM", ticks = F),
         htmlOutput(ns("surface_click_info"))
         )
     )

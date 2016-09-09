@@ -94,7 +94,8 @@ function reset_brush(id){
 
   # generate axes to use for parallel coordinates plot. You'll need to choose
   # the "dimensions" argument in the parcoords() function too...
-  pc_axes_adap <- c("ID", "cost","dom_rel","irr_rel","eco_rel", "dom_crel")
+  #pc_axes_adap <- c("ID", "cost","dom_rel","irr_rel","eco_rel", "dom_crel")
+  pc_axes_adap <- c("ID", "cost","dom_rel","irr_rel","dom_crel")
 
   obj_space_default_data <- select(base_clim, one_of(pc_axes_adap))
   obj_space_disp_data <- reactiveValues(d = obj_space_default_data)
@@ -158,10 +159,10 @@ function reset_brush(id){
       dimensions = list(
         ID   = list(title = "ID", tickValues = id_ticks),
         cost = list(title = "Cost"),
-        dom_rel = list(title = "Dom. Reliability"),
-        irr_rel = list(title = "Irr. Reliability"),
-        eco_rel = list(title = "Env. Reliability"),
-        dom_crel = list(title = "Dom. Crit. Reliability")
+        dom_rel = list(title = "Dom. Rel."),
+        irr_rel = list(title = "Irr. Rel."),
+        #eco_rel = list(title = "Env. Rel."),
+        dom_crel = list(title = "Dom. Crit. Rel.")
       ),
       tasks = htmlwidgets::JS("function f(){this.parcoords.alphaOnBrushed(0.15);}")
     ) #close parcoords

@@ -1,8 +1,10 @@
 ---
-title: "Bringing insight to the decision maker"
+title: "Bringing Insight to the Decision Maker"
 author: "Timothy Adams, Umit Taner, Patrick Ray"
 date: "September 10, 2016"
-output: ioslides_presentation
+output: 
+  ioslides_presentation:
+    css: styles.css
 runtime: shiny
 ---
 
@@ -25,12 +27,18 @@ surface_data_mean <- surface_data %>%
 
 surface_data %<>% bind_rows(surface_data_mean)
 ```
+
 ## What Do Decision Makers Want to Know?
 
 > - Where is my risk?
 > - What can do I do to reduce my risk?
 
-## Surface Plot, Interactive
+## Where is My Risk?
+
+![](images/static3.png)
+
+
+## Interactivity > Static
 ```{r phase3sp, echo = FALSE}
 source("R/phase3-surface.R")
 shinyApp(
@@ -50,7 +58,7 @@ shinyApp(
 )
 ```
 
-## Parallel Coordinates
+## Showing Multidimentionality 
 ```{r phase3pc, echo = FALSE}
 source("R/phase3-parallelcoordinates.R")
 shinyApp(
@@ -70,7 +78,16 @@ shinyApp(
 )
 ```
 
-## Phase 4
+## Combatting Information Overload
+The information visualization mantra:
+
+> - Overview first
+> - Zoom and filter
+> - Details on demand
+
+(Shneiderman 2008, *The eyes have it: a task by data type taxonomy for information visualizations*)
+
+## Implementing the Mantra
 ```{r phase4, echo = FALSE}
 adap_results <- read_csv("./data/mean_adaptation_results.csv")
 
@@ -107,3 +124,9 @@ shinyApp(
   options = list(height = 680)
 )
 ```
+
+## In Conclusion
+
+> - Interactivity > Static
+> - Embrace multidimensionality
+> - Follow the mantra
